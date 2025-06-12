@@ -181,8 +181,3 @@ The repository is organized to promote modularity, reusability, and environment 
 - **Architecture**: Diagrams in `docs/architecture`.
 - **Compliance**: HIPAA/GDPR controls in `docs/compliance`.
 - **Runbooks**: Operational guides in `docs/runbooks`.
-
-## Contact
-- **Project Manager**: Senior DevOps Lead
-- **Slack Channel**: #eks-infra-automation
-- **JIRA Project**: EKS-TERRAFORM
