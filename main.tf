@@ -39,13 +39,13 @@ module "eks" {
   cluster_ingress_cidrs = var.cluster_ingress_cidrs
 
   # Node group configuration
-  node_ami_id         = var.node_ami_id
-  node_instance_types = var.node_instance_types
-  node_desired_size   = var.node_desired_size
-  node_max_size       = var.node_max_size
-  node_min_size       = var.node_min_size
-  node_disk_size      = var.node_disk_size
+  node_ami_id = var.node_ami_id
+  instance_types = var.eks_instance_types
+  desired_size = var.eks_desired_size
+  max_size = var.eks_max_size
+  min_size = var.eks_min_size
+  node_disk_size = var.node_disk_size
 
   kms_key_arn = module.kms.kms_key_arn
-  tags        = var.tags
+  tags = var.tags
 } 

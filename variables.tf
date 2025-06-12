@@ -43,25 +43,25 @@ variable "node_ami_id" {
   type        = string
 }
 
-variable "node_instance_types" {
+variable "eks_instance_types" {
   description = "List of instance types for the node group"
   type        = list(string)
   default     = ["t3.medium"]
 }
 
-variable "node_desired_size" {
+variable "eks_desired_size" {
   description = "Desired number of nodes in the node group"
   type        = number
   default     = 2
 }
 
-variable "node_max_size" {
+variable "eks_max_size" {
   description = "Maximum number of nodes in the node group"
   type        = number
   default     = 4
 }
 
-variable "node_min_size" {
+variable "eks_min_size" {
   description = "Minimum number of nodes in the node group"
   type        = number
   default     = 1
