@@ -148,4 +148,22 @@ resource "aws_security_group" "node" {
   tags = merge(var.tags, {
     Name = "${local.cluster_name}-node-sg"
   })
+}
+
+# External Secrets Operator
+module "external_secrets" {
+  source = "../security/external-secrets-operator"
+
+  project_name = var.project_name
+  environment  = var.environment
+  cluster_name = local.cluster_name
+
+  cluster_oidc_provider_arn = aws_iam_openid_connect_provider.eks.arn
+  cluster_oidc_issuer_url   = aws_iam_openid_connect_provider.eks.url
+  
+  aws_region    = data.aws_region.current.name
+  aws_account_id = data.aws_caller_identity.current.account_id
+  kms_key_arn   = var.kms_key_arn
+
+  tags = var.tags
 } 

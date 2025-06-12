@@ -118,6 +118,193 @@ The repository is organized to promote modularity, reusability, and environment 
   - `guardduty`: Detects threats in EKS workloads.
 - **Dependencies**: IAM depends on KMS; CloudTrail depends on S3.
 
+### Secrets Management
+The infrastructure implements a comprehensive secrets management strategy using AWS KMS and EKS native features:
+
+#### KMS (Key Management Service)
+- **Key Creation and Management**:
+  - Environment-specific KMS keys (`dev`, `staging`, `prod`)
+  - Automatic key rotation enabled
+  - Proper IAM policies for key usage
+  - Service-specific permissions for EKS, CloudTrail, and CloudWatch
+
+- **Key Usage**:
+  - EKS cluster secrets encryption
+  - EBS volume encryption for EKS nodes
+  - CloudTrail log encryption
+  - S3 bucket encryption
+  - Terraform state encryption
+
+#### External Secrets Operator (ESO)
+- **Integration with AWS Secrets Manager**:
+  - Secure secret synchronization between AWS Secrets Manager and Kubernetes
+  - Automatic secret rotation with AWS Secrets Manager
+  - IAM role-based access using EKS OIDC provider
+  - KMS encryption support for all secrets
+  - Environment-specific secret management (dev/staging/prod)
+
+- **Architecture**:
+  - Cluster-wide SecretStore for AWS integration
+  - Namespace-specific ExternalSecret resources
+  - Service account with IRSA (IAM Roles for Service Accounts)
+  - Secure webhook for validation
+  - Leader election for high availability
+
+- **Security Features**:
+  - Least privilege IAM policies
+  - KMS encryption at rest
+  - Non-root container execution
+  - Pod security context
+  - Resource limits and requests
+  - Pod disruption budget
+  - Pod anti-affinity for high availability
+
+- **Monitoring and Observability**:
+  - Prometheus metrics integration
+  - ServiceMonitor for Prometheus Operator
+  - Detailed audit logging
+  - Webhook validation metrics
+  - Leader election status
+
+- **Usage Examples**:
+
+  1. **Basic Secret**:
+  ```yaml
+  apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: database-credentials
+    namespace: my-app
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: aws-secrets-manager
+      kind: ClusterSecretStore
+    target:
+      name: database-credentials
+    data:
+      - secretKey: username
+        remoteRef:
+          key: prod/database/credentials
+          property: username
+      - secretKey: password
+        remoteRef:
+          key: prod/database/credentials
+          property: password
+  ```
+
+  2. **Secret with Template**:
+  ```yaml
+  apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: api-config
+    namespace: my-app
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: aws-secrets-manager
+      kind: ClusterSecretStore
+    target:
+      name: api-config
+      template:
+        type: Opaque
+        data:
+          config.json: |
+            {
+              "apiKey": "{{ .apiKey }}",
+              "endpoint": "{{ .endpoint }}"
+            }
+    data:
+      - secretKey: apiKey
+        remoteRef:
+          key: prod/api/credentials
+          property: apiKey
+      - secretKey: endpoint
+        remoteRef:
+          key: prod/api/config
+          property: endpoint
+  ```
+
+  3. **Secret with DataFrom**:
+  ```yaml
+  apiVersion: external-secrets.io/v1beta1
+  kind: ExternalSecret
+  metadata:
+    name: all-database-secrets
+    namespace: my-app
+  spec:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: aws-secrets-manager
+      kind: ClusterSecretStore
+    target:
+      name: all-database-secrets
+    dataFrom:
+      - extract:
+          key: prod/database/all-secrets
+  ```
+
+- **Best Practices**:
+  - Use environment-specific secret paths
+  - Implement proper secret rotation
+  - Set appropriate refresh intervals
+  - Use templates for complex secret structures
+  - Monitor secret synchronization status
+  - Regular audit of secret access
+  - Implement proper RBAC for ExternalSecret resources
+
+- **Troubleshooting**:
+  - Check ESO pod logs for synchronization issues
+  - Verify IAM role permissions
+  - Ensure proper OIDC provider configuration
+  - Monitor secret store status
+  - Check webhook validation logs
+  - Verify KMS key permissions
+
+#### EKS Secrets Management
+- **Cluster-level Encryption**:
+  - KMS encryption for Kubernetes secrets
+  - Private endpoint access
+  - Certificate rotation for kubelet
+  - Encrypted EBS volumes for nodes
+
+- **Node Security**:
+  - Encrypted root volumes with KMS
+  - Automatic certificate rotation
+  - Secure bootstrap process
+  - IAM roles with least privilege
+
+#### State and Backup Security
+- **Terraform State**:
+  - Encrypted S3 backend
+  - DynamoDB state locking
+  - Versioning enabled
+  - Regular automated backups
+  - 30-day retention policy
+
+#### Security Monitoring
+- **Audit and Compliance**:
+  - CloudTrail logging with KMS encryption
+  - AWS Config monitoring
+  - GuardDuty threat detection
+  - Regular security scanning
+
+#### Access Control
+- **IAM Integration**:
+  - Role-based access control
+  - Service-specific permissions
+  - Least privilege principle
+  - Regular access reviews
+
+#### Compliance Features
+- **HIPAA/GDPR Compliance**:
+  - Encryption at rest
+  - Secure key management
+  - Audit logging
+  - Access control
+  - Regular key rotation
+
 ### Networking Modules
 - **VPC**: Deploys multi-AZ VPC with private subnets and NAT gateways.
 - **Transit Gateway**: Enables inter-VPC connectivity.

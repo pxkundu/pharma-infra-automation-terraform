@@ -1,0 +1,65 @@
+# External Secrets Operator Helm chart values
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: ${aws_iam_role.external_secrets.arn}
+
+# Security context
+securityContext:
+  fsGroup: 65534
+  runAsUser: 65534
+  runAsNonRoot: true
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 65534
+  runAsUser: 65534
+  runAsNonRoot: true
+
+# Resource limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Pod anti-affinity
+podAntiAffinity:
+  enabled: true
+  type: soft
+
+# Metrics configuration
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+
+# Webhook configuration
+webhook:
+  enabled: true
+  port: 9443
+  certDir: /tmp/certs
+
+# Leader election
+leaderElection:
+  enabled: true
+  namespace: external-secrets
+
+# Logging configuration
+logLevel: info
+
+# Feature flags
+features:
+  enablePushSecret: true
+  enableSecretStoreValidation: true
+  enableExternalSecretValidation: true 
