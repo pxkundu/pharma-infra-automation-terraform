@@ -38,7 +38,8 @@ module "eks" {
   enable_public_access  = var.enable_public_access
   cluster_ingress_cidrs = var.cluster_ingress_cidrs
 
-  node_ami_id        = var.node_ami_id
+  # Node group configuration
+  node_ami_id         = var.node_ami_id
   node_instance_types = var.node_instance_types
   node_desired_size   = var.node_desired_size
   node_max_size       = var.node_max_size
